@@ -1,4 +1,4 @@
-name: cml2
+name: model-training
 on: [push]
 jobs:
   run:
@@ -7,18 +7,21 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
          python-version: '3.x'
       - uses: actions/setup-node@v3
         with:
-         node-version: '20'
+         node-version: '16'
       - uses: iterative/setup-cml@v1
       - name: Train model
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_TOKEN: ${{ secrets.TOKEN_GIT }}
         run: |
           pip install -r requirements.txt
           python train.py
           npm install -g @dvcorg/cml
-          echo 'DONE'
+          # Create CML report
+          cat metrics.txt >> report.md
+          echo '![](./feature_importance.png "feature")' >> report.md
+          cml comment create report.md
